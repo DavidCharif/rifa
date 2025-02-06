@@ -40,12 +40,20 @@ def public_view():
 def admin_view():
     # Handle status updates from form submission
     if request.method == 'POST':
-        # Get list of paid numbers from form data
-        numbers = request.form.getlist('numbers')
-        for number in numbers:
+        # Get list of all ticket numbers
+        all_tickets = {str(ticket.number): 'available' for ticket in Ticket.query.all()}
+        
+        # Update status based on checked boxes
+        checked_numbers = request.form.getlist('numbers')
+        for number in checked_numbers:
+            all_tickets[number] = 'paid'
+        
+        # Update database
+        for number, status in all_tickets.items():
             ticket = Ticket.query.get(int(number))
             if ticket:
-                ticket.status = 'paid'
+                ticket.status = status
+        
         db.session.commit()
         return redirect('/admin')
     
