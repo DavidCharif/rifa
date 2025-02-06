@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="mb-4">Available Raffle Numbers</h2>
+    <div class="d-flex flex-wrap">
+        {% for ticket in tickets %}
+            <div class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}">
+                {{ ticket.number }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

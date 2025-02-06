@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="mb-4">Admin Panel</h2>
+    <form method="post">
+        <div class="d-flex flex-wrap">
+            {% for ticket in tickets %}
+                <label class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}">
+                    <input type="checkbox" name="numbers" value="{{ ticket.number }}"
+                           {{ 'checked' if ticket.status == 'paid' }}>
+                    {{ ticket.number }}
+                </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+    </form>
+{% endblock %}
