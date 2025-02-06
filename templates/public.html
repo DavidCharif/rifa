@@ -1,10 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2 class="mb-4">Available Raffle Numbers</h2>
-    <div class="d-flex flex-wrap">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="stats-card">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4 class="text-success">Available Numbers</h4>
+                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</h2>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-danger">Sold Numbers</h4>
+                        <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</h2>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-primary">Total Numbers</h4>
+                        <h2>{{ tickets|length }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search numbers..." onkeyup="filterNumbers()">
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap" id="numberGrid">
         {% for ticket in tickets %}
-            <div class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}">
+            <div class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}"
+                 data-bs-toggle="tooltip" 
+                 data-bs-placement="top" 
+                 title="{{ 'Available' if ticket.status == 'available' else 'Sold' }}">
                 {{ ticket.number }}
             </div>
         {% endfor %}

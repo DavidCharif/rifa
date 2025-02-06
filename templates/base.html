@@ -2,25 +2,116 @@
 <html>
 <head>
     <title>Raffle Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --available-color: #28a745;
+            --paid-color: #dc3545;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #343a40;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
         .number-box {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             margin: 5px;
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            position: relative;
         }
-        .available { background-color: #d4edda; }
-        .paid { background-color: #f8d7da; }
+        .number-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,.1);
+        }
+        .available {
+            background-color: var(--available-color);
+        }
+        .paid {
+            background-color: var(--paid-color);
+        }
+        .number-box input[type="checkbox"] {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        }
+        .search-box {
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .number-box {
+                width: 60px;
+                height: 60px;
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-ticket-alt me-2"></i>Raffle Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Public View</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin"><i class="fas fa-cog me-1"></i>Admin Panel</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Enable tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+        
+        // Filter numbers
+        function filterNumbers() {
+            var input = document.getElementById('searchInput');
+            var filter = input.value.toLowerCase();
+            var boxes = document.getElementsByClassName('number-box');
+            
+            for (var i = 0; i < boxes.length; i++) {
+                var number = boxes[i].innerText;
+                if (number.includes(filter)) {
+                    boxes[i].style.display = "";
+                } else {
+                    boxes[i].style.display = "none";
+                }
+            }
+        }
+    </script>
 </body>
 </html>

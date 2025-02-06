@@ -1,17 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2 class="mb-4">Admin Panel</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="stats-card">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4 class="text-success">Available Numbers</h4>
+                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</h2>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-danger">Sold Numbers</h4>
+                        <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</h2>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-primary">Total Numbers</h4>
+                        <h2>{{ tickets|length }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form method="post">
-        <div class="d-flex flex-wrap">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search numbers..." onkeyup="filterNumbers()">
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap" id="numberGrid">
             {% for ticket in tickets %}
-                <label class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}">
+                <label class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top" 
+                       title="Click to {{ 'mark as sold' if ticket.status == 'available' else 'mark as available' }}">
                     <input type="checkbox" name="numbers" value="{{ ticket.number }}"
                            {{ 'checked' if ticket.status == 'paid' }}>
                     {{ ticket.number }}
                 </label>
             {% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
     </form>
 {% endblock %}
