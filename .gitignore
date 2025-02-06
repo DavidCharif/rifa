@@ -1,0 +1,7 @@
+# Create .gitignore
+venv/
+*.pyc
+__pycache__/
+instance/
+.env
+rifa.db

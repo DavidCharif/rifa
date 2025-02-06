@@ -54,21 +54,4 @@ def admin_view():
     return render_template('admin.html', tickets=tickets)
 
 if __name__ == '__main__':
-# 1. Create a GitHub repository
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git
-git push -u origin main
-
-# 2. Then sign up at pythonanywhere.com and:
-- Create new web app
-- Connect your GitHub repo
-- Configure WSGI file:
-  ```python
-  import sys
-  path = '/home/YOUR_USERNAME/YOUR_REPO'
-  if path not in sys.path:
-      sys.path.append(path)
-  from app import app as application    app.run(debug=True)
+    app.run(debug=True)
