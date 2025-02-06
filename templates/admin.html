@@ -6,15 +6,15 @@
             <div class="stats-card">
                 <div class="row text-center">
                     <div class="col-md-4">
-                        <h4 class="text-success">Available Numbers</h4>
+                        <h4 class="text-success">Numeros disponibles</h4>
                         <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
                     <div class="col-md-4">
-                        <h4 class="text-danger">Sold Numbers</h4>
+                        <h4 class="text-danger">Números apartados</h4>
                         <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
                     <div class="col-md-4">
-                        <h4 class="text-primary">Total Numbers</h4>
+                        <h4 class="text-primary">Total</h4>
                         <h2>{{ (tickets|selectattr('number', 'ne', 0)|list|length) }}</h2>
                     </div>
                 </div>
@@ -26,12 +26,12 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <div class="search-box">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search numbers..." onkeyup="filterNumbers()">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar números..." onkeyup="filterNumbers()">
                 </div>
             </div>
             <div class="col-md-6 text-end">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Save Changes
+                    <i class="fas fa-save me-1"></i>Guardar cambios
                 </button>
             </div>
         </div>

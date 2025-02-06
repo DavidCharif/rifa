@@ -6,15 +6,15 @@
             <div class="stats-card">
                 <div class="row text-center">
                     <div class="col-md-4">
-                        <h4 class="text-success">Available Numbers</h4>
+                        <h4 class="text-success">Números disponibles</h4>
                         <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
                     <div class="col-md-4">
-                        <h4 class="text-danger">Sold Numbers</h4>
+                        <h4 class="text-danger">Números apartados</h4>
                         <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
                     <div class="col-md-4">
-                        <h4 class="text-primary">Total Numbers</h4>
+                        <h4 class="text-primary">Total</h4>
                         <h2>{{ (tickets|selectattr('number', 'ne', 0)|list|length) }}</h2>
                     </div>
                 </div>
