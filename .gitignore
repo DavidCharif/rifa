@@ -4,4 +4,4 @@ venv/
 __pycache__/
 instance/
 .env
-rifa.db
+rifa.db 

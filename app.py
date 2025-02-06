@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Configure database URI for SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rifa.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/zizekiando/rifa/rifa.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
