@@ -23,7 +23,7 @@ def init_db_command():
     with app.app_context():
         db.create_all()
         if Ticket.query.count() == 0:
-            for num in range(101):
+            for num in range(1, 101):
                 db.session.add(Ticket(number=num))
             db.session.commit()
     print("Database initialized successfully!")
