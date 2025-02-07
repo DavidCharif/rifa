@@ -5,15 +5,19 @@
         <div class="col-md-12">
             <div class="stats-card">
                 <div class="row text-center">
-                    <div class="col-md-4">
-                        <h4 class="text-success">Números disponibles</h4>
-                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('number', 'ne', 0)|list|length }}</h2>
+                    <div class="col-md-3">
+                        <h4 class="text-success">Available</h4>
+                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('reserved', 'equalto', false)|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
-                    <div class="col-md-4">
-                        <h4 class="text-danger">Números apartados</h4>
+                    <div class="col-md-3">
+                        <h4 class="text-warning">Reserved</h4>
+                        <h2>{{ tickets|selectattr('reserved', 'equalto', true)|selectattr('number', 'ne', 0)|list|length }}</h2>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-danger">Sold</h4>
                         <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|selectattr('number', 'ne', 0)|list|length }}</h2>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <h4 class="text-primary">Total</h4>
                         <h2>{{ (tickets|selectattr('number', 'ne', 0)|list|length) }}</h2>
                     </div>
@@ -32,13 +36,75 @@
 
     <div class="d-flex flex-wrap" id="numberGrid">
         {% for ticket in tickets %}
-            <div class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}"
+            <div class="number-box {% if ticket.reserved %}reserved{% else %}{{ 'available' if ticket.status == 'available' else 'paid' }}{% endif %}"
                  data-bs-toggle="tooltip" 
                  data-bs-placement="top" 
                  data-number="{{ ticket.number }}"
-                 title="{{ 'Available' if ticket.status == 'available' else 'Sold' }}">
+                 {% if ticket.status == 'available' and not ticket.reserved %}onclick="handleReservation({{ ticket.number }})"{% endif %}
+                 title="{% if ticket.reserved %}Reserved{% else %}{{ 'Available' if ticket.status == 'available' else 'Sold' }}{% endif %}">
                 {{ ticket.number }}
+                {% if ticket.reserved %}
+                    <div class="reserved-timer" data-until="{{ ticket.reserved_until }}"></div>
+                    {% if ticket.reserved_by == session.get('user_id') %}
+                    <button class="btn btn-sm btn-warning release-btn" onclick="event.stopPropagation(); releaseNumber({{ ticket.number }})">
+                        Release
+                    </button>
+                    {% endif %}
+                {% endif %}
             </div>
         {% endfor %}
     </div>
+
+    <script>
+        function handleReservation(number) {
+            fetch(`/reserve/${number}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Could not reserve number');
+                }
+            });
+        }
+
+        function releaseNumber(number) {
+            fetch(`/release/${number}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Could not release number');
+                }
+            });
+        }
+
+        function updateTimers() {
+            document.querySelectorAll('.reserved-timer').forEach(timer => {
+                const endTime = new Date(timer.dataset.until);
+                const remaining = endTime - new Date();
+                if(remaining <= 0) {
+                    location.reload();
+                } else {
+                    const mins = Math.floor(remaining / 60000);
+                    const secs = Math.floor((remaining % 60000) / 1000);
+                    timer.textContent = `${mins}m ${secs}s`;
+                }
+            });
+        }
+
+        // Update timers every second
+        setInterval(updateTimers, 1000);
+    </script>
 {% endblock %}

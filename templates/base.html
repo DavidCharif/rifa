@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --available-color: #0060ffb5;
+            --available-color: #0400ff;
             --paid-color: #dc3545;
+            --reserved-color: #ffc107;
         }
         body {
             background-color: #f8f9fa;
@@ -41,6 +42,27 @@
         }
         .paid {
             background-color: var(--paid-color);
+        }
+        .reserved {
+            background-color: var(--reserved-color);
+            color: #000;
+        }
+        .reserved-timer {
+            font-size: 0.7em;
+            position: absolute;
+            bottom: 2px;
+            width: 100%;
+            text-align: center;
+            color: #000;
+        }
+        .release-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 2px 5px;
+            font-size: 0.7em;
+            border-radius: 10px;
+            z-index: 100;
         }
         .number-box input[type="checkbox"] {
             position: absolute;
