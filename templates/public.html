@@ -4,11 +4,11 @@
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col">
-            <h2 class="text-center">Rifa - Números Disponibles</h2>
+            <h2 class="text-center">Raffle - Available Numbers</h2>
             <div class="text-center mb-4">
-                <span class="badge badge-available me-2">Disponibles: {{ tickets|selectattr('status', 'equalto', 'disponible')|list|length }}</span>
-                <span class="badge badge-reserved me-2">Reservados: {{ tickets|selectattr('reserved')|list|length }}</span>
-                <span class="badge badge-paid">Pagados: {{ tickets|selectattr('status', 'equalto', 'pagado')|list|length }}</span>
+                <span class="badge badge-available me-2">Available: {{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</span>
+                <span class="badge badge-reserved me-2">Reserved: {{ tickets|selectattr('reserved')|list|length }}</span>
+                <span class="badge badge-paid">Paid: {{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</span>
                 <span class="badge bg-secondary ms-2">Total: {{ tickets|length }}</span>
             </div>
         </div>
@@ -18,22 +18,21 @@
         <div class="col">
             <div class="d-flex flex-wrap justify-content-center">
                 {% for ticket in tickets %}
-                <div class="number-box {% if ticket.status == 'pagado' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
+                <div class="number-box {% if ticket.status == 'paid' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
                      data-number="{{ ticket.number }}"
-                     {% if ticket.reserved %}
-                     data-reserved-until="{{ ticket.reserved_until }}"
-                     {% endif %}
-                     role="button"
-                     aria-label="Número {{ ticket.number }} - {% if ticket.status == 'pagado' %}Pagado{% elif ticket.reserved %}Reservado{% else %}Disponible{% endif %}"
+                     data-status="{{ ticket.status }}"
+                     data-reserved="{{ ticket.reserved|lower }}"
+                     {% if ticket.reserved_until %}data-reserved-until="{{ ticket.reserved_until }}"{% endif %}
+                     aria-label="Number {{ ticket.number }} - {% if ticket.status == 'paid' %}Paid{% elif ticket.reserved %}Reserved{% else %}Available{% endif %}"
                      tabindex="0">
                     {{ ticket.number }}
                     {% if ticket.reserved %}
-                        <div class="reserved-timer" aria-label="Tiempo restante de reserva"></div>
+                        <div class="reserved-timer" aria-label="Time remaining for reservation"></div>
                         {% if ticket.reserved_by == session.user_id %}
                         <button class="btn btn-sm btn-danger release-btn" 
                                 onclick="releaseNumber({{ ticket.number }})"
-                                aria-label="Liberar reserva del número {{ ticket.number }}">
-                            Liberar
+                                aria-label="Release reservation for number {{ ticket.number }}">
+                            Release
                         </button>
                         {% endif %}
                     {% endif %}
@@ -86,12 +85,12 @@ function reserveNumber(number) {
             if (data.success) {
                 location.reload();
             } else {
-                alert('No se pudo reservar el número: ' + data.message);
+                alert('Could not reserve the number: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al reservar el número');
+            alert('Error reserving the number');
         });
 }
 
@@ -102,12 +101,12 @@ function releaseNumber(number) {
             if (data.success) {
                 location.reload();
             } else {
-                alert('No se pudo liberar el número: ' + data.message);
+                alert('Could not release the number: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al liberar el número');
+            alert('Error releasing the number');
         });
 }
 </script>

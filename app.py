@@ -18,7 +18,7 @@ migrate = Migrate(app, db)
 class Ticket(db.Model):
     # Stores ticket number (1-100) and payment status
     number = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String(20), default='disponible')
+    status = db.Column(db.String(20), default='available')
     timestamp = db.Column(db.DateTime, default=db.func.now())
     # New reservation fields
     reserved = db.Column(db.Boolean, default=False)
@@ -49,13 +49,13 @@ def init_db_command():
 @app.route('/reserve/<int:number>', methods=['POST'])
 def reserve_number(number):
     ticket = Ticket.query.get(number)
-    if ticket and ticket.status == 'disponible' and not ticket.reserved:
+    if ticket and ticket.status == 'available' and not ticket.reserved:
         ticket.reserved = True
         ticket.reserved_until = datetime.utcnow() + timedelta(minutes=30)
         ticket.reserved_by = session.get('user_id', None)  # We'll generate this in a moment
         db.session.commit()
         return jsonify({'success': True, 'ticket': ticket.to_dict()})
-    return jsonify({'success': False, 'message': 'Número no disponible'})
+    return jsonify({'success': False, 'message': 'Number not available'})
 
 @app.route('/release/<int:number>', methods=['POST'])
 def release_number(number):
@@ -99,12 +99,12 @@ def admin_view():
     # Handle status updates from form submission
     if request.method == 'POST':
         # Get list of all ticket numbers
-        all_tickets = {str(ticket.number): 'disponible' for ticket in Ticket.query.all()}
+        all_tickets = {str(ticket.number): 'available' for ticket in Ticket.query.all()}
         
         # Update status based on checked boxes
         checked_numbers = request.form.getlist('numbers')
         for number in checked_numbers:
-            all_tickets[number] = 'pagado'
+            all_tickets[number] = 'paid'
         
         # Update database
         for number, status in all_tickets.items():
@@ -112,7 +112,7 @@ def admin_view():
             if ticket:
                 ticket.status = status
                 # Clear any reservations if marked as paid
-                if status == 'pagado':
+                if status == 'paid':
                     ticket.reserved = False
                     ticket.reserved_until = None
                     ticket.reserved_by = None
