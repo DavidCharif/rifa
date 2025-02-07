@@ -44,70 +44,70 @@
 </div>
 
 <script>
-function updateTimer(element, reservedUntil) {
-    const now = new Date().getTime();
-    const reservationEnd = new Date(reservedUntil).getTime();
-    const timeLeft = reservationEnd - now;
-
-    if (timeLeft <= 0) {
-        location.reload();
-        return;
-    }
-
-    const minutes = Math.floor(timeLeft / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-    element.textContent = `${minutes}m ${seconds}s`;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const boxes = document.querySelectorAll('.number-box');
-    
-    boxes.forEach(box => {
-        if (box.classList.contains('available')) {
-            box.addEventListener('click', () => reserveNumber(box.dataset.number));
+function updateTimers() {
+    document.querySelectorAll('.reserved-timer').forEach(timer => {
+        const box = timer.closest('.number-box');
+        if (!box) return;
+        
+        const reservedUntil = new Date(box.dataset.reservedUntil);
+        const now = new Date();
+        const diff = reservedUntil - now;
+        
+        if (diff <= 0) {
+            location.reload();
+            return;
         }
         
-        if (box.classList.contains('reserved')) {
-            const timer = box.querySelector('.reserved-timer');
-            if (timer) {
-                const reservedUntil = box.dataset.reservedUntil;
-                updateTimer(timer, reservedUntil);
-                setInterval(() => updateTimer(timer, reservedUntil), 1000);
-            }
-        }
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        timer.textContent = `${minutes}m ${seconds}s`;
     });
-});
+}
+
+// Update timers every second
+setInterval(updateTimers, 1000);
+updateTimers(); // Initial update
 
 function reserveNumber(number) {
-    fetch(`/reserve/${number}`, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Could not reserve the number: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error reserving the number');
-        });
+    fetch(`/reserve/${number}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Could not reserve the number: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error reserving the number');
+    });
 }
 
 function releaseNumber(number) {
-    fetch(`/release/${number}`, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Could not release the number: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error releasing the number');
-        });
+    fetch(`/release/${number}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Could not release the number: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error releasing the number');
+    });
 }
 </script>
 {% endblock %}

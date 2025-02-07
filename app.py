@@ -30,7 +30,7 @@ class Ticket(db.Model):
             'number': self.number,
             'status': self.status,
             'reserved': self.reserved,
-            'reserved_until': self.reserved_until.isoformat() if self.reserved_until else None
+            'reserved_until': self.reserved_until.astimezone().isoformat() if self.reserved_until else None
         }
 
 # CLI command for database initialization
@@ -51,8 +51,9 @@ def reserve_number(number):
     ticket = Ticket.query.get(number)
     if ticket and ticket.status == 'available' and not ticket.reserved:
         ticket.reserved = True
+        # Store in UTC
         ticket.reserved_until = datetime.now(timezone.utc) + timedelta(minutes=30)
-        ticket.reserved_by = session.get('user_id', None)  # We'll generate this in a moment
+        ticket.reserved_by = session.get('user_id', None)
         db.session.commit()
         return jsonify({'success': True, 'ticket': ticket.to_dict()})
     return jsonify({'success': False, 'message': 'Number not available'})
