@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -51,7 +51,7 @@ def reserve_number(number):
     ticket = Ticket.query.get(number)
     if ticket and ticket.status == 'available' and not ticket.reserved:
         ticket.reserved = True
-        ticket.reserved_until = now(datetime.timezone.utc) + timedelta(minutes=30)
+        ticket.reserved_until = datetime.now(timezone.utc) + timedelta(minutes=30)
         ticket.reserved_by = session.get('user_id', None)  # We'll generate this in a moment
         db.session.commit()
         return jsonify({'success': True, 'ticket': ticket.to_dict()})
