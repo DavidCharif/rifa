@@ -13,7 +13,7 @@ def migrate_data():
         db.session.commit()
 
         # Get data from old database
-        old_cursor.execute('SELECT number, status FROM tickets')
+        old_cursor.execute('SELECT number, status FROM ticket')  # Changed from 'tickets' to 'ticket'
         tickets = old_cursor.fetchall()
 
         # Migrate each ticket
