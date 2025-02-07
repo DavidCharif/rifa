@@ -6,9 +6,9 @@
         <div class="col">
             <h2 class="text-center">Panel de Administración - Rifa</h2>
             <div class="text-center mb-4">
-                <span class="badge bg-primary me-2">Disponibles: {{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</span>
-                <span class="badge bg-warning me-2">Reservados: {{ tickets|selectattr('reserved')|list|length }}</span>
-                <span class="badge bg-danger">Pagados: {{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</span>
+                <span class="badge badge-available me-2">Disponibles: {{ tickets|selectattr('status', 'equalto', 'disponible')|list|length }}</span>
+                <span class="badge badge-reserved me-2">Reservados: {{ tickets|selectattr('reserved')|list|length }}</span>
+                <span class="badge badge-paid">Pagados: {{ tickets|selectattr('status', 'equalto', 'pagado')|list|length }}</span>
                 <span class="badge bg-secondary ms-2">Total: {{ tickets|length }}</span>
             </div>
         </div>
@@ -19,15 +19,15 @@
             <div class="col">
                 <div class="d-flex flex-wrap justify-content-center">
                     {% for ticket in tickets %}
-                    <div class="number-box {% if ticket.status == 'paid' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
+                    <div class="number-box {% if ticket.status == 'pagado' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
                          role="checkbox"
-                         aria-checked="{{ 'true' if ticket.status == 'paid' else 'false' }}"
-                         aria-label="Número {{ ticket.number }} - {% if ticket.status == 'paid' %}Pagado{% elif ticket.reserved %}Reservado{% else %}Disponible{% endif %}">
+                         aria-checked="{{ 'true' if ticket.status == 'pagado' else 'false' }}"
+                         aria-label="Número {{ ticket.number }} - {% if ticket.status == 'pagado' %}Pagado{% elif ticket.reserved %}Reservado{% else %}Disponible{% endif %}">
                         {{ ticket.number }}
                         <input type="checkbox" 
                                name="numbers" 
                                value="{{ ticket.number }}"
-                               {% if ticket.status == 'paid' %}checked{% endif %}
+                               {% if ticket.status == 'pagado' %}checked{% endif %}
                                aria-label="Marcar número {{ ticket.number }} como pagado">
                         {% if ticket.reserved %}
                         <div class="reserved-timer" aria-label="Tiempo restante de reserva"></div>
