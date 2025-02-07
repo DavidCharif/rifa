@@ -1,110 +1,114 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-center">Rifa - Números Disponibles</h2>
+            <div class="text-center mb-4">
+                <span class="badge bg-primary me-2">Disponibles: {{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</span>
+                <span class="badge bg-warning me-2">Reservados: {{ tickets|selectattr('reserved')|list|length }}</span>
+                <span class="badge bg-danger">Pagados: {{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</span>
+                <span class="badge bg-secondary ms-2">Total: {{ tickets|length }}</span>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-md-12">
-            <div class="stats-card">
-                <div class="row text-center">
-                    <div class="col-md-3">
-                        <h4 class="text-success">Available</h4>
-                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('reserved', 'equalto', false)|selectattr('number', 'ne', 0)|list|length }}</h2>
-                    </div>
-                    <div class="col-md-3">
-                        <h4 class="text-warning">Reserved</h4>
-                        <h2>{{ tickets|selectattr('reserved', 'equalto', true)|selectattr('number', 'ne', 0)|list|length }}</h2>
-                    </div>
-                    <div class="col-md-3">
-                        <h4 class="text-danger">Sold</h4>
-                        <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|selectattr('number', 'ne', 0)|list|length }}</h2>
-                    </div>
-                    <div class="col-md-3">
-                        <h4 class="text-primary">Total</h4>
-                        <h2>{{ (tickets|selectattr('number', 'ne', 0)|list|length) }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="search-box">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search numbers..." onkeyup="filterNumbers()">
-            </div>
-        </div>
-    </div>
-
-    <div class="d-flex flex-wrap" id="numberGrid">
-        {% for ticket in tickets %}
-            <div class="number-box {% if ticket.reserved %}reserved{% else %}{{ 'available' if ticket.status == 'available' else 'paid' }}{% endif %}"
-                 data-bs-toggle="tooltip" 
-                 data-bs-placement="top" 
-                 data-number="{{ ticket.number }}"
-                 {% if ticket.status == 'available' and not ticket.reserved %}onclick="handleReservation({{ ticket.number }})"{% endif %}
-                 title="{% if ticket.reserved %}Reserved{% else %}{{ 'Available' if ticket.status == 'available' else 'Sold' }}{% endif %}">
-                {{ ticket.number }}
-                {% if ticket.reserved %}
-                    <div class="reserved-timer" data-until="{{ ticket.reserved_until }}"></div>
-                    {% if ticket.reserved_by == session.get('user_id') %}
-                    <button class="btn btn-sm btn-warning release-btn" onclick="event.stopPropagation(); releaseNumber({{ ticket.number }})">
-                        Release
-                    </button>
+        <div class="col">
+            <div class="d-flex flex-wrap justify-content-center">
+                {% for ticket in tickets %}
+                <div class="number-box {% if ticket.status == 'paid' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
+                     data-number="{{ ticket.number }}"
+                     {% if ticket.reserved %}
+                     data-reserved-until="{{ ticket.reserved_until }}"
+                     {% endif %}
+                     role="button"
+                     aria-label="Número {{ ticket.number }} - {% if ticket.status == 'paid' %}Pagado{% elif ticket.reserved %}Reservado{% else %}Disponible{% endif %}"
+                     tabindex="0">
+                    {{ ticket.number }}
+                    {% if ticket.reserved %}
+                        <div class="reserved-timer" aria-label="Tiempo restante de reserva"></div>
+                        {% if ticket.reserved_by == session.user_id %}
+                        <button class="btn btn-sm btn-danger release-btn" 
+                                onclick="releaseNumber({{ ticket.number }})"
+                                aria-label="Liberar reserva del número {{ ticket.number }}">
+                            Liberar
+                        </button>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
+                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+        </div>
     </div>
+</div>
 
-    <script>
-        function handleReservation(number) {
-            fetch(`/reserve/${number}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'Could not reserve number');
-                }
-            });
+<script>
+function updateTimer(element, reservedUntil) {
+    const now = new Date().getTime();
+    const reservationEnd = new Date(reservedUntil).getTime();
+    const timeLeft = reservationEnd - now;
+
+    if (timeLeft <= 0) {
+        location.reload();
+        return;
+    }
+
+    const minutes = Math.floor(timeLeft / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    element.textContent = `${minutes}m ${seconds}s`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const boxes = document.querySelectorAll('.number-box');
+    
+    boxes.forEach(box => {
+        if (box.classList.contains('available')) {
+            box.addEventListener('click', () => reserveNumber(box.dataset.number));
         }
-
-        function releaseNumber(number) {
-            fetch(`/release/${number}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'Could not release number');
-                }
-            });
+        
+        if (box.classList.contains('reserved')) {
+            const timer = box.querySelector('.reserved-timer');
+            if (timer) {
+                const reservedUntil = box.dataset.reservedUntil;
+                updateTimer(timer, reservedUntil);
+                setInterval(() => updateTimer(timer, reservedUntil), 1000);
+            }
         }
+    });
+});
 
-        function updateTimers() {
-            document.querySelectorAll('.reserved-timer').forEach(timer => {
-                const endTime = new Date(timer.dataset.until);
-                const remaining = endTime - new Date();
-                if(remaining <= 0) {
-                    location.reload();
-                } else {
-                    const mins = Math.floor(remaining / 60000);
-                    const secs = Math.floor((remaining % 60000) / 1000);
-                    timer.textContent = `${mins}m ${secs}s`;
-                }
-            });
-        }
+function reserveNumber(number) {
+    fetch(`/reserve/${number}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('No se pudo reservar el número: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al reservar el número');
+        });
+}
 
-        // Update timers every second
-        setInterval(updateTimers, 1000);
-    </script>
+function releaseNumber(number) {
+    fetch(`/release/${number}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('No se pudo liberar el número: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al liberar el número');
+        });
+}
+</script>
 {% endblock %}

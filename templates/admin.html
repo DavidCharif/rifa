@@ -1,53 +1,87 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="stats-card">
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <h4 class="text-success">Numeros disponibles</h4>
-                        <h2>{{ tickets|selectattr('status', 'equalto', 'available')|selectattr('number', 'ne', 0)|list|length }}</h2>
-                    </div>
-                    <div class="col-md-4">
-                        <h4 class="text-danger">Números apartados</h4>
-                        <h2>{{ tickets|selectattr('status', 'equalto', 'paid')|selectattr('number', 'ne', 0)|list|length }}</h2>
-                    </div>
-                    <div class="col-md-4">
-                        <h4 class="text-primary">Total</h4>
-                        <h2>{{ (tickets|selectattr('number', 'ne', 0)|list|length) }}</h2>
-                    </div>
-                </div>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-center">Panel de Administración - Rifa</h2>
+            <div class="text-center mb-4">
+                <span class="badge bg-primary me-2">Disponibles: {{ tickets|selectattr('status', 'equalto', 'available')|list|length }}</span>
+                <span class="badge bg-warning me-2">Reservados: {{ tickets|selectattr('reserved')|list|length }}</span>
+                <span class="badge bg-danger">Pagados: {{ tickets|selectattr('status', 'equalto', 'paid')|list|length }}</span>
+                <span class="badge bg-secondary ms-2">Total: {{ tickets|length }}</span>
             </div>
         </div>
     </div>
 
-    <form method="post">
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="search-box">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar números..." onkeyup="filterNumbers()">
+    <form method="post" class="mb-4">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-wrap justify-content-center">
+                    {% for ticket in tickets %}
+                    <div class="number-box {% if ticket.status == 'paid' %}paid{% elif ticket.reserved %}reserved{% else %}available{% endif %}"
+                         role="checkbox"
+                         aria-checked="{{ 'true' if ticket.status == 'paid' else 'false' }}"
+                         aria-label="Número {{ ticket.number }} - {% if ticket.status == 'paid' %}Pagado{% elif ticket.reserved %}Reservado{% else %}Disponible{% endif %}">
+                        {{ ticket.number }}
+                        <input type="checkbox" 
+                               name="numbers" 
+                               value="{{ ticket.number }}"
+                               {% if ticket.status == 'paid' %}checked{% endif %}
+                               aria-label="Marcar número {{ ticket.number }} como pagado">
+                        {% if ticket.reserved %}
+                        <div class="reserved-timer" aria-label="Tiempo restante de reserva"></div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="col-md-6 text-end">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Guardar cambios
-                </button>
+        </div>
+        <div class="row mt-4">
+            <div class="col text-center">
+                <button type="submit" class="btn btn-primary">Actualizar Estado de Pago</button>
             </div>
         </div>
-
-        <div class="d-flex flex-wrap" id="numberGrid">
-            {% for ticket in tickets %}
-                <label class="number-box {{ 'available' if ticket.status == 'available' else 'paid' }}"
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="top" 
-                       data-number="{{ ticket.number }}"
-                       title="Click to {{ 'mark as sold' if ticket.status == 'available' else 'mark as available' }}">
-                    <input type="checkbox" name="numbers" value="{{ ticket.number }}"
-                           {{ 'checked' if ticket.status == 'paid' }}>
-                    {{ ticket.number }}
-                </label>
-            {% endfor %}
-        </div>
     </form>
+</div>
+
+<script>
+function updateTimer(element, reservedUntil) {
+    const now = new Date().getTime();
+    const reservationEnd = new Date(reservedUntil).getTime();
+    const timeLeft = reservationEnd - now;
+
+    if (timeLeft <= 0) {
+        location.reload();
+        return;
+    }
+
+    const minutes = Math.floor(timeLeft / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    element.textContent = `${minutes}m ${seconds}s`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const boxes = document.querySelectorAll('.number-box');
+    
+    boxes.forEach(box => {
+        if (box.classList.contains('reserved')) {
+            const timer = box.querySelector('.reserved-timer');
+            if (timer) {
+                const reservedUntil = box.dataset.reservedUntil;
+                updateTimer(timer, reservedUntil);
+                setInterval(() => updateTimer(timer, reservedUntil), 1000);
+            }
+        }
+        
+        // Make the entire box clickable for the checkbox
+        box.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

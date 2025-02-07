@@ -18,7 +18,7 @@ migrate = Migrate(app, db)
 class Ticket(db.Model):
     # Stores ticket number (1-100) and payment status
     number = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String(20), default='available')
+    status = db.Column(db.String(20), default='disponible')
     timestamp = db.Column(db.DateTime, default=db.func.now())
     # New reservation fields
     reserved = db.Column(db.Boolean, default=False)
@@ -36,26 +36,26 @@ class Ticket(db.Model):
 # CLI command for database initialization
 @app.cli.command("init-db")
 def init_db_command():
-    """Initialize the database"""
+    """Inicializar la base de datos"""
     with app.app_context():
         db.create_all()
         if Ticket.query.count() == 0:
             for num in range(1, 101):
                 db.session.add(Ticket(number=num))
             db.session.commit()
-    print("Database initialized successfully!")
+    print("¡Base de datos inicializada exitosamente!")
 
 # Reservation routes
 @app.route('/reserve/<int:number>', methods=['POST'])
 def reserve_number(number):
     ticket = Ticket.query.get(number)
-    if ticket and ticket.status == 'available' and not ticket.reserved:
+    if ticket and ticket.status == 'disponible' and not ticket.reserved:
         ticket.reserved = True
         ticket.reserved_until = datetime.utcnow() + timedelta(minutes=30)
         ticket.reserved_by = session.get('user_id', None)  # We'll generate this in a moment
         db.session.commit()
         return jsonify({'success': True, 'ticket': ticket.to_dict()})
-    return jsonify({'success': False, 'message': 'Ticket not available'})
+    return jsonify({'success': False, 'message': 'Número no disponible'})
 
 @app.route('/release/<int:number>', methods=['POST'])
 def release_number(number):
@@ -66,7 +66,7 @@ def release_number(number):
         ticket.reserved_by = None
         db.session.commit()
         return jsonify({'success': True})
-    return jsonify({'success': False, 'message': 'Cannot release ticket'})
+    return jsonify({'success': False, 'message': 'No se puede liberar el número'})
 
 # Public facing view showing available numbers
 @app.route('/')
@@ -99,12 +99,12 @@ def admin_view():
     # Handle status updates from form submission
     if request.method == 'POST':
         # Get list of all ticket numbers
-        all_tickets = {str(ticket.number): 'available' for ticket in Ticket.query.all()}
+        all_tickets = {str(ticket.number): 'disponible' for ticket in Ticket.query.all()}
         
         # Update status based on checked boxes
         checked_numbers = request.form.getlist('numbers')
         for number in checked_numbers:
-            all_tickets[number] = 'paid'
+            all_tickets[number] = 'pagado'
         
         # Update database
         for number, status in all_tickets.items():
@@ -112,7 +112,7 @@ def admin_view():
             if ticket:
                 ticket.status = status
                 # Clear any reservations if marked as paid
-                if status == 'paid':
+                if status == 'pagado':
                     ticket.reserved = False
                     ticket.reserved_until = None
                     ticket.reserved_by = None
