@@ -51,7 +51,7 @@ def reserve_number(number):
     ticket = Ticket.query.get(number)
     if ticket and ticket.status == 'available' and not ticket.reserved:
         ticket.reserved = True
-        ticket.reserved_until = datetime.utcnow() + timedelta(minutes=30)
+        ticket.reserved_until = datetime.timezone.utc + timedelta(minutes=30)
         ticket.reserved_by = session.get('user_id', None)  # We'll generate this in a moment
         db.session.commit()
         return jsonify({'success': True, 'ticket': ticket.to_dict()})
